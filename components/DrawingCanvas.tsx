@@ -169,7 +169,7 @@ export default function DrawingCanvas({ lessonId, seed, reviewing, onReview }: P
     <div className="canvas-footer">
       <div className="canvas-tip"><WandSparkles size={17}/><span>Tip: trace the light guides, then make the final edges your own.</span></div>
       <div className="canvas-actions">
-        <button className="subtle-button" onClick={() => setStrokes(geometry.sample)}><Sparkles size={16}/> Load sample</button>
+        <button className="subtle-button sample-button" onClick={() => { setStrokes(geometry.sample); setEraser(false); }}><Sparkles size={16}/> Load Sample Drawing</button>
         <button className="subtle-button" onClick={download}><Download size={16}/> Export PNG</button>
       </div>
     </div>

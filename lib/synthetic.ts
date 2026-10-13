@@ -24,7 +24,7 @@ function rectangle(x1: number, y1: number, x2: number, y2: number, kind: Segment
 
 function imperfectSample(reference: Segment[], seed: number): Stroke[] {
   const jitter = random(seed + 991);
-  return reference.filter((_, index) => index % 5 !== 3).map((segment, index) => {
+  return reference.map((segment, index) => {
     const points: Point[] = [];
     const dx = segment.to.x - segment.from.x;
     const dy = segment.to.y - segment.from.y;
@@ -32,7 +32,7 @@ function imperfectSample(reference: Segment[], seed: number): Stroke[] {
       const t = i / 12;
       const wiggle = (jitter() - .5) * (index % 4 === 0 ? 12 : 5);
       // One receding edge aims visibly away from the true vanishing point.
-      points.push(p(segment.from.x + dx*t + wiggle, segment.from.y + dy*t + (jitter()-.5)*6 + (index === 3 ? 46*t : 0)));
+      points.push(p(segment.from.x + dx*t + wiggle, segment.from.y + dy*t + (jitter()-.5)*6 + (index === 4 ? 46*t : 0)));
     }
     return { points, color: '#3c3936', width: 2.5 };
   });
