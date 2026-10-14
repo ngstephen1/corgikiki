@@ -3,6 +3,7 @@ import type { Coaching, Critique, ReviewFeedback } from './types';
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const isText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0 && value.length <= 1000;
 const isTextArray = (value: unknown, min = 1, max = 6): value is string[] => Array.isArray(value) && value.length >= min && value.length <= max && value.every(isText);
+const validSkills = (value: unknown): value is NonNullable<Critique['skills']> => isObject(value) && ['perspective','proportions','creativity','technical'].every(key => Number.isInteger(value[key]) && (value[key] as number) >= 0 && (value[key] as number) <= 100);
 
 export function parseCritique(value: unknown): Critique {
   if (!isObject(value) || !Number.isInteger(value.score) || (value.score as number) < 0 || (value.score as number) > 100 ||
@@ -11,7 +12,8 @@ export function parseCritique(value: unknown): Critique {
   }
   return {
     score: value.score as number, summary: value.summary, strengths: value.strengths,
-    improvements: value.improvements, primaryWeakness: value.primaryWeakness
+    improvements: value.improvements, primaryWeakness: value.primaryWeakness,
+    skills: validSkills(value.skills) ? value.skills : undefined
   };
 }
 
@@ -33,13 +35,16 @@ export function parseReview(value: unknown): ReviewFeedback {
 
 export const criticSchema = {
   type: 'object', additionalProperties: false,
-  required: ['score', 'summary', 'strengths', 'improvements', 'primaryWeakness'],
+  required: ['score', 'summary', 'strengths', 'improvements', 'primaryWeakness', 'skills'],
   properties: {
     score: { type: 'integer', description: 'Approximate instructional score from 0 to 100.' },
     summary: { type: 'string' },
     strengths: { type: 'array', items: { type: 'string' } },
     improvements: { type: 'array', items: { type: 'string' } },
-    primaryWeakness: { type: 'string' }
+    primaryWeakness: { type: 'string' },
+    skills: { type: 'object', additionalProperties: false, required: ['perspective','proportions','creativity','technical'], properties: {
+      perspective: { type: 'integer' }, proportions: { type: 'integer' }, creativity: { type: 'integer' }, technical: { type: 'integer' }
+    } }
   }
 };
 

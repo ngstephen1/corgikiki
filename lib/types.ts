@@ -24,6 +24,7 @@ export type Geometry = {
 
 export type Critique = {
   score: number;
+  skills?: { perspective: number; proportions: number; creativity: number; technical: number };
   summary: string;
   strengths: string[];
   improvements: string[];

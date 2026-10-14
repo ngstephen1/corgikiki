@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Brush, Download, Eraser, Eye, EyeOff, RotateCcw, Sparkles, Trash2, WandSparkles } from 'lucide-react';
 import { ART_HEIGHT, ART_WIDTH, generateGeometry } from '@/lib/synthetic';
 import type { LessonId, Point, Segment, Stroke } from '@/lib/types';
 
 type Props = { lessonId: LessonId; seed: number; reviewing: boolean; onReview: (image: string, strokeCount: number) => void };
+export type DrawingCanvasHandle = { capture: () => string | null };
 const colors = ['#363b3a', '#ed7759', '#6d81bc', '#73a595'];
 
 function drawSegment(ctx: CanvasRenderingContext2D, segment: Segment, color: string, width: number, dashed = false) {
@@ -47,7 +48,7 @@ function drawStrokes(ctx: CanvasRenderingContext2D, strokes: Stroke[]) {
   }
 }
 
-export default function DrawingCanvas({ lessonId, seed, reviewing, onReview }: Props) {
+const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(function DrawingCanvas({ lessonId, seed, reviewing, onReview }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawingRef = useRef(false);
   const activeStrokeRef = useRef<Stroke | null>(null);
@@ -129,6 +130,7 @@ export default function DrawingCanvas({ lessonId, seed, reviewing, onReview }: P
     if (inkCtx) { drawStrokes(inkCtx, strokes); ctx.drawImage(ink, 0, 0); }
     return exportCanvas.toDataURL('image/png');
   };
+  useImperativeHandle(ref, () => ({ capture: () => strokes.length ? capture() : null }));
   const download = () => {
     const link = document.createElement('a');
     link.download = `corgikiki-${lessonId}-sketch.png`;
@@ -175,4 +177,6 @@ export default function DrawingCanvas({ lessonId, seed, reviewing, onReview }: P
     </div>
     <button className="review-button" onClick={review} disabled={!strokes.length || reviewing} title={!strokes.length ? 'Draw a few lines or load the sample first' : undefined}><Sparkles size={18}/> {reviewing ? 'Kiki is reviewing your sketch…' : 'Ask Kiki to Review My Sketch'} <span>↗</span></button>
   </div>;
-}
+});
+
+export default DrawingCanvas;

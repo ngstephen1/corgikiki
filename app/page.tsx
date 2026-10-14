@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight, ChevronDown, CircleHelp, Layers3, Menu, RefreshCw, Sparkles } from 'lucide-react';
-import DrawingCanvas from '@/components/DrawingCanvas';
+import DrawingCanvas, { type DrawingCanvasHandle } from '@/components/DrawingCanvas';
 import ExerciseSelector from '@/components/ExerciseSelector';
 import TutorPanel from '@/components/TutorPanel';
 import FeedbackPanel from '@/components/FeedbackPanel';
+import AskKikiChat from '@/components/AskKikiChat';
+import CareerPanel from '@/components/CareerPanel';
 import { getExercise } from '@/lib/exercises';
 import { generateGeometry } from '@/lib/synthetic';
 import { parseReview } from '@/lib/review';
@@ -39,6 +41,7 @@ export default function Home() {
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [practice, setPractice] = useState<PracticeExercise | null>(null);
   const reviewInFlight = useRef(false);
+  const drawingCanvas = useRef<DrawingCanvasHandle>(null);
   const [showMobilePath, setShowMobilePath] = useState(false);
   const exercise = getExercise(lessonId);
   const displayExercise = practice ? { ...exercise, title: practice.title, objective: practice.objective, steps: practice.steps, description: 'A personalized practice round built from your latest review.' } : exercise;
@@ -51,7 +54,7 @@ export default function Home() {
     } catch { /* Keep the starter path if storage is unavailable. */ }
   }, []);
 
-  const selectLesson = (id: LessonId) => { setLessonId(id); setActiveStep(0); setPractice(null); setShowMobilePath(false); };
+  const selectLesson = (id: LessonId) => { setLessonId(id); setActiveStep(0); setPractice(null); setReviewFeedback(null); setReviewStatus('idle'); setShowMobilePath(false); };
   const closeReview = () => { if (!reviewInFlight.current) setReviewImage(null); };
   const requestReview = async (image: string, strokeCount: number) => {
     if (reviewInFlight.current) return;
@@ -95,15 +98,17 @@ export default function Home() {
       <div className={`workspace-grid ${showMobilePath ? 'show-path' : ''}`}>
         <ExerciseSelector selected={lessonId} completed={completed} onSelect={selectLesson}/>
         <section className="center-column" aria-label="Drawing studio">
-          <div className="exercise-heading"><div><div className="exercise-meta"><span className="lesson-tag">LESSON {exercise.number}</span><span className="meta-dot">·</span><span>{exercise.difficulty.toUpperCase()}</span><span className="meta-dot">·</span><span>{exercise.minutes} MIN READ & DRAW</span></div><h2>{displayExercise.title}</h2><p>{displayExercise.description}</p></div><button className="variation-button" onClick={() => { setSeed(value => value + 1); setActiveStep(0); }}><RefreshCw size={15}/> New variation</button></div>
-          <DrawingCanvas lessonId={lessonId} seed={seed} reviewing={reviewStatus === 'loading'} onReview={requestReview}/>
+          <div className="exercise-heading"><div><div className="exercise-meta"><span className="lesson-tag">LESSON {exercise.number}</span><span className="meta-dot">·</span><span>{exercise.difficulty.toUpperCase()}</span><span className="meta-dot">·</span><span>{exercise.minutes} MIN READ & DRAW</span></div><h2>{displayExercise.title}</h2><p>{displayExercise.description}</p></div><button className="variation-button" onClick={() => { setSeed(value => value + 1); setActiveStep(0); setReviewFeedback(null); }}><RefreshCw size={15}/> New variation</button></div>
+          <DrawingCanvas ref={drawingCanvas} lessonId={lessonId} seed={seed} reviewing={reviewStatus === 'loading'} onReview={requestReview}/>
           <div className="objective-line"><span><span className="objective-star">✦</span> TODAY&apos;S GOAL</span><p>{displayExercise.objective}</p><ArrowRight size={17}/></div>
         </section>
         <aside className="right-column"><TutorPanel exercise={displayExercise} geometry={geometry} activeStep={activeStep} onStep={setActiveStep}/></aside>
       </div>
 
+      <CareerPanel critique={reviewFeedback?.critic ?? null} exerciseId={lessonId} onSelectLesson={selectLesson}/>
       <section className="bottom-note" id="how-it-works"><span>✳</span><p>Sketch at your own pace. There&apos;s no perfect line—only the next one.</p><span>CORGIKIKI · MADE FOR BEGINNERS</span></section>
     </main>
     <FeedbackPanel image={reviewImage} status={reviewStatus} feedback={reviewFeedback} error={reviewError} onClose={closeReview} onTryAgain={() => setReviewImage(null)} onPractice={practiceSkill} onComplete={completeLesson} completed={completed.includes(lessonId)}/>
+    <AskKikiChat context={{ exerciseId: lessonId, seed, critique: reviewFeedback?.critic }} captureDrawing={() => drawingCanvas.current?.capture() ?? null} onPractice={practiceSkill} onSelectLesson={selectLesson}/>
   </div>;
 }
