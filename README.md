@@ -12,6 +12,8 @@
 
 CorgiKiki is a beginner-friendly architecture drawing studio. Pick a lesson, sketch directly in the browser, and get feedback from an **Architectural Vision Critic** and **Kiki Drawing Coach**. Ask Kiki questions, explore source-linked learning resources, and see a career map based on your latest sketch review.
 
+The launch experience includes a responsive studio, quick links to sketching and career exploration, Kiki's floating chat, and a branded social preview. Judges can reach a complete review in two clicks: **Load Sample Drawing → Ask Kiki to Review My Sketch**.
+
 <div align="center"><img src="./assets/studio-preview.png" width="100%" alt="CorgiKiki drawing studio with a perspective-guided canvas and beginner lesson" /></div>
 
 ## Try the demo
@@ -60,7 +62,7 @@ cd corgikiki
 npm install
 ```
 
-Create a root `.env` file with your own key:
+Copy `.env.example` to a root `.env` file, then add your own key:
 
 ```dotenv
 OPEN_API_API=your_openai_api_key
@@ -74,6 +76,15 @@ open http://localhost:3000
 ```
 
 The key is read on the server through `process.env.OPEN_API_API`; `.env` is gitignored. An existing local configuration using `OPEN_AI_API` is also supported for compatibility. Never put the key in client code or commit it.
+
+## Deploy on Vercel
+
+1. Import this repository into Vercel. Leave the framework preset as **Next.js** and the root directory as the repository root.
+2. In **Project Settings → Environment Variables**, add `OPEN_API_API` for **Production** and **Preview**. Paste the key there; do not add it to Git.
+3. Enable Vercel's **System Environment Variables** for the project so social previews use the production URL.
+4. Deploy. If you change the key later, redeploy so the new value reaches the Functions.
+
+The app needs no database, persistent storage, or custom Vercel build command. The API routes run on Node.js. Canvas exports use a compact image size, and the routes cap drawing payloads to fit within Vercel's Function request limit. The OpenAI key stays server-side. See [Next.js on Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs) and [Vercel environment variables](https://vercel.com/docs/environment-variables).
 
 ## Checks
 

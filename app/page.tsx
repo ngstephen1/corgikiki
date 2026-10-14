@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ChevronDown, CircleHelp, Layers3, Menu, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, ChevronDown, Layers3, Menu, RefreshCw, Sparkles } from 'lucide-react';
 import DrawingCanvas, { type DrawingCanvasHandle } from '@/components/DrawingCanvas';
 import ExerciseSelector from '@/components/ExerciseSelector';
 import TutorPanel from '@/components/TutorPanel';
@@ -62,7 +62,7 @@ export default function Home() {
     setReviewImage(image); setReviewFeedback(null); setReviewError(null); setReviewStatus('loading');
     const payload: ReviewRequest = { image, exerciseId: lessonId, instructions: displayExercise.steps, difficulty: exercise.difficulty, seed, geometry: { horizonY: geometry.horizonY, vanishing: geometry.vanishing, reference: geometry.reference }, strokeCount };
     try {
-      const response = await fetch('/api/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(70_000) });
+      const response = await fetch('/api/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(100_000) });
       const data: unknown = await response.json();
       if (!response.ok) throw new Error(data && typeof data === 'object' && 'error' in data && typeof data.error === 'string' ? data.error : 'Kiki could not finish the review. Please try again.');
       setReviewFeedback(parseReview(data));
@@ -82,18 +82,18 @@ export default function Home() {
   return <div className="app-shell">
     <header className="site-header">
       <div className="brand"><span className="brand-mascot"><Image src={logoArt} alt="" width={86} height={86} className="brand-logo-image" priority/></span><span className="brand-word">Corgi<span>Kiki</span><i>✳</i></span></div>
-      <nav className="header-nav"><span className="nav-active"><Layers3 size={16}/> AI Drawing Studio</span><a href="#how-it-works"><CircleHelp size={16}/> How it works</a></nav>
+      <nav className="header-nav" aria-label="Main navigation"><a href="#studio" className="nav-active"><Layers3 size={16}/> AI Drawing Studio</a><a href="#career"><BriefcaseBusiness size={16}/> Career map</a></nav>
       <div className="header-right"><span className="header-progress"><span className="header-progress-icon">✦</span> {completed.length}/3 lessons</span><span className="powered-label"><span className="powered-star">✺</span> Powered by OpenAI</span></div>
       <button className="mobile-menu" onClick={() => setShowMobilePath(value => !value)} aria-label="Toggle learning path"><Menu size={22}/></button>
     </header>
 
     <main>
       <section className="welcome-banner">
-        <div className="welcome-copy"><div className="eyebrow"><span className="eyebrow-dot"/> YOUR CREATIVE JOURNEY STARTS HERE</div><h1>Hey, future architect! <span className="wave">✳</span></h1><p>Every great architect starts with a sketch. Let&apos;s make your first lines feel a little less intimidating—and a lot more fun.</p><span className="welcome-pill"><Sparkles size={14}/> No experience needed. Just bring your curiosity.</span></div>
+        <div className="welcome-copy"><div className="eyebrow"><span className="eyebrow-dot"/> YOUR CREATIVE JOURNEY STARTS HERE</div><h1>Hey, future architect! <span className="wave">✳</span></h1><p>Every great architect starts with a sketch. Let&apos;s make your first lines feel a little less intimidating—and a lot more fun.</p><div className="hero-actions"><a href="#studio" className="hero-start"><Sparkles size={16}/> Start sketching <ArrowRight size={16}/></a><a href="#career" className="hero-career">Explore careers <ArrowRight size={15}/></a></div></div>
         <div className="hero-art"><div className="hero-grid"/><div className="hero-orbit hero-orbit-one"/><div className="hero-orbit hero-orbit-two"/><div className="hero-spark one">✦</div><div className="hero-spark two">✳</div><div className="hero-label"><span>HI, I&apos;M KIKI!</span><span>↗</span></div><Corgi/></div>
       </section>
 
-      <div className="workspace-top"><div><span className="section-kicker">THE SKETCH STUDIO <span>✦</span></span><h2>Let&apos;s draw something <em>amazing.</em></h2></div><div className="workspace-status"><span className="status-dot"/> Your canvas is ready <ChevronDown size={14}/></div></div>
+      <div className="workspace-top" id="studio"><div><span className="section-kicker">THE SKETCH STUDIO <span>✦</span></span><h2>Let&apos;s draw something <em>amazing.</em></h2></div><div className="workspace-status"><span className="status-dot"/> Your canvas is ready <ChevronDown size={14}/></div></div>
 
       <div className={`workspace-grid ${showMobilePath ? 'show-path' : ''}`}>
         <ExerciseSelector selected={lessonId} completed={completed} onSelect={selectLesson}/>

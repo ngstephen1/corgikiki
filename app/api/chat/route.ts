@@ -4,6 +4,7 @@ import { generateGeometry } from '@/lib/synthetic';
 import type { LessonId, PracticeExercise } from '@/lib/types';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 type Message = { role: 'user' | 'assistant'; content: string };
 type Context = { exerciseId: LessonId; seed: number; critique?: { summary: string; primaryWeakness: string; improvements: string[] } };
@@ -27,11 +28,11 @@ function parseContext(v: unknown): Context | null {
   return { exerciseId: c.exerciseId, seed: c.seed as number, critique };
 }
 function validImage(v: unknown): v is string {
-  if (typeof v !== 'string' || v.length > 7_500_000) return false;
+  if (typeof v !== 'string' || v.length > 3_600_000) return false;
   const match = /^data:image\/png;base64,([A-Za-z0-9+/]+={0,2})$/.exec(v);
   if (!match) return false;
   const b = Buffer.from(match[1], 'base64');
-  return b.length >= 45 && b.length <= 5_500_000 && b.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) && b.readUInt32BE(16) >= 64 && b.readUInt32BE(16) <= 4096 && b.readUInt32BE(20) >= 64 && b.readUInt32BE(20) <= 4096;
+  return b.length >= 45 && b.length <= 2_700_000 && b.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) && b.readUInt32BE(16) >= 64 && b.readUInt32BE(16) <= 4096 && b.readUInt32BE(20) >= 64 && b.readUInt32BE(20) <= 4096;
 }
 const functions = [
   { type: 'function' as const, name: 'get_current_exercise', description: 'Get the selected drawing lesson and its instructions.', strict: true, parameters: { type: 'object', properties: {}, required: [], additionalProperties: false } },
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPEN_API_API?.trim() || process.env.OPEN_AI_API?.trim();
   if (!apiKey) return send({ error: 'Kiki is not configured. Add OPEN_API_API to the existing .env and restart the server.' }, 503);
   if (!request.headers.get('content-type')?.includes('application/json')) return send({ error: 'Send a JSON chat request.' }, 415);
-  if (Number(request.headers.get('content-length') || 0) > 8_000_000) return send({ error: 'The request is too large.' }, 413);
+  if (Number(request.headers.get('content-length') || 0) > 4_000_000) return send({ error: 'The request is too large.' }, 413);
   let body: unknown;
   try { body = await request.json(); } catch { return send({ error: 'Invalid JSON.' }, 400); }
   if (!body || typeof body !== 'object') return send({ error: 'Invalid chat request.' }, 400);

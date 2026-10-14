@@ -3,6 +3,7 @@ import { getExercise } from '@/lib/exercises';
 import type { LessonId } from '@/lib/types';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 const ids: LessonId[] = ['cube', 'room', 'hallway'];
 const text = (v: unknown, max = 180) => typeof v === 'string' ? v.trim().slice(0, max) : '';

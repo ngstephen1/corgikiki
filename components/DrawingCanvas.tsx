@@ -118,10 +118,9 @@ const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(function DrawingCan
 
   const capture = () => {
     const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = ART_WIDTH * 2; exportCanvas.height = ART_HEIGHT * 2;
+    exportCanvas.width = ART_WIDTH; exportCanvas.height = ART_HEIGHT;
     const ctx = exportCanvas.getContext('2d');
     if (!ctx) return '';
-    ctx.scale(2, 2);
     ctx.fillStyle = '#fffdf9'; ctx.fillRect(0, 0, ART_WIDTH, ART_HEIGHT);
     if (showGuide) drawGuide(ctx, geometry.guide, geometry.vanishing);
     const ink = document.createElement('canvas');
